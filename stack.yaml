@@ -50,7 +50,7 @@ extra-deps:
    - binary-0.8.5.1@sha256:5d263bfdeb4943f3a492177c98b51e5ef2327e728fcbb579b40e6d70e2c7c368,5994
    - text-1.2.4.0@sha256:8c24450feb8e3bbb7ea3e17af24ef57e85db077c4bf53e5bcc345b283d1b1d5b,10081
    - github: Ehtycs/haskell-gmsh
-     commit: 935b419bdc1ba5ee4ad44ec0674279da1f6dfe60
+     commit: 5acef51d7b872c2be9ab20bb7fb52680457423db
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

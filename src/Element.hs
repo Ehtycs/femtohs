@@ -1,19 +1,36 @@
 module Element where
 
 type R = Double
-type Tag = Int
+type ElementTag = Int
+type NodeTag = Int
 
-class Element a where
-   elementTag :: a -> Tag
+--data Node = Node Tag [R] deriving (Show, Eq)
 
-data Node = Node Tag (R,R,R) deriving (Show, Eq)
+data ElementType = Line | Triangle | Tetrahedron deriving (Show, Eq)
 
-data Line = Line Tag (Node, Node) deriving (Show, Eq)
+data Element = Element
+   { elementType :: ElementType
+   , elementTag :: ElementTag
+   , elementNodes :: [NodeTag]
+   } deriving (Eq)
 
-instance Element Line where
-   elementTag (Line tag _ ) = tag
+instance Show Element where
+   show el = show (elementType el)++ "("++ show (elementTag el) ++ "): " ++ 
+             show (elementNodes el)
 
-data Triangle = Triangle Tag (Node, Node, Node) deriving (Show, Eq)
+numNodes :: ElementType -> Int
+numNodes et = case et of
+   Line -> 2
+   Triangle -> 3
+   Tetrahedron -> 4
 
-instance Element Triangle where
-   elementTag (Triangle tag _) = tag
+mkElement :: ElementType -> Int -> [Int] -> Element
+mkElement tp tag ntags =
+   -- let tp' = mkElementType tp
+   Element tp tag ntags
+
+mkElementType :: Int -> ElementType
+mkElementType n = case n of
+   1 -> Line
+   2 -> Triangle
+   _ -> error $ "Element type " ++ show n ++ " not implemented"

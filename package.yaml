@@ -22,7 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - eigen == 3.3.7.0
-
+- containers == 0.6.0.1
 #extra-deps:
 #- github: Ehtycs/haskell-gmsh
 #  commit: 935b419bdc1ba5ee4ad44ec0674279da1f6dfe60
