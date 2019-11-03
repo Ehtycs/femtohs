@@ -12,6 +12,7 @@ import qualified Data.Map.Strict as M
 
 main :: IO ()
 main = do
+   putStrLn "Running test code..."
    gmshInitialize [] Nothing
    gmshModelOccAddRectangle 0 0 0 1 1 Nothing Nothing
    gmshModelOccAddRectangle 1 1 0 1 1 Nothing Nothing
@@ -26,19 +27,11 @@ main = do
    disk <- gmshModelAddPhysicalGroup 2 [3] Nothing
    gmshModelMeshGenerate $ Just 2
 
-   hierarchy <- gmshReadMeshData
+   mesh <- mkMesh <$> gmshReadMeshData
 
-   case (M.lookup (DimTag (2,1)) hierarchy >>= M.lookup (EntityTag 1)) of
+   case (meshGetEntityOf (DimTag (2,1)) (EntityTag 1)) mesh of
       Just x -> forM_ x print
-      Nothing -> print "Not found"
-
-
-   -- forM (concat $ concat $ concat out) $ \(et, nts) -> do
-   --    putStr "Etag: "
-   --    print et
-   --    putStrLn "Ntags: "
-   --    print nts
-   --    putStrLn ""
+      Nothing -> putStrLn "Not found"
 
    --gmshFltkRun
    gmshFinalize

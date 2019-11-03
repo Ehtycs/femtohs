@@ -23,9 +23,13 @@ reshape :: Int -> [a] -> [[a]]
 reshape _ [] = []
 reshape dim xs = take dim xs : reshape dim (drop dim xs)
 
+type NodeData = V.Vector [Double]
+type ElementData = [(DimTag, [(EntityTag, [Element])])]
+
 -- Reads elements and nodes from GMSH and returns a hierarchy of
--- physical domains (with dimension), entities and elements
-gmshReadMeshData :: IO(M.Map DimTag (M.Map EntityTag [Element]))
+-- physical domains (with dimension), entities and elements to be further
+-- processed.
+gmshReadMeshData :: IO (NodeData, ElementData)
 gmshReadMeshData = do
 
    (ntags, coords, _) <- gmshModelMeshGetNodes Nothing Nothing Nothing Nothing
@@ -63,11 +67,9 @@ gmshReadMeshData = do
             return (EntityTag etag, concat etypeElements)
          -- build a Map , keys entity tags and value the list of elements
          -- inside that entity.
-         return (DimTag (dim,tag), M.fromList etagElements)
+         return (DimTag (dim,tag), etagElements)
       -- Return the list of (dimTag, Map) pairs, since dimTag already contains
       -- the dimension, no need to have an extra layer
       return pgroupsElements
 
-   -- construct the final form :
-   -- Map DimTag (Map EntityTag [Element])
-   return $ M.fromList (concat out)
+   return $ (ncoords, (concat out))
