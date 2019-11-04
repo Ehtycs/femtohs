@@ -41,3 +41,46 @@ mkElementType n = case n of
    1 -> Line
    2 -> Triangle
    _ -> error $ "Element type " ++ show n ++ " not implemented"
+
+
+-- integration scheme
+-- outputs points, weigths
+gaussIntegrationScheme :: Element -> Int -> [([Double], Double)]
+gaussIntegrationScheme element rank =
+   case (elementType element) of
+      Triangle ->
+         case rank of
+            1 -> [([1/3, 1/3] , 0.5)]
+            2 -> [([1/6, 1/6], 1/3)
+                 ,([4/6, 1/6], 1/3)
+                 ,([1/6, 4/6], 1/3)]
+      Line ->
+         case rank of
+            1 -> [([1/2] , 1)]
+            -- TODO : Find a few more digits for these
+            2 -> [([0.788675], 0.5)
+                 ,([0.211325], 0.5)]
+
+
+
+-- Scalar basis functions in elements
+nodeScalarBasis :: Element -> Int -> [R] -> R
+nodeScalarBasis (Element elementType _ _ nodes) i pnt
+   = case (elementType) of
+      Triangle ->
+         let
+            [n1,n2,n3] = nodes
+            [pu, pv] = pnt
+         in
+            case i of
+               0 -> 1 - pu - pv
+               1 -> pu
+               2 -> pv
+      Line ->
+         let
+            [n1,n2] = nodes
+            [pu] = pnt
+         in
+            case i of
+               0 -> 1 - pu
+               1 -> pu

@@ -29,3 +29,19 @@ meshGetPhysical dt mesh =
 meshGetEntityOf dt ent mesh = do
    physgroup <- M.lookup dt (meshHierarchy mesh)
    M.lookup ent physgroup
+
+defineDomain :: [DimTag] -> Mesh -> [Element]
+defineDomain dts mesh' =
+   concat $ map lookupPhysgroupOrError dts
+   where
+      mesh = meshHierarchy mesh'
+      lookupPhysgroupOrError dt =
+         case (M.lookup dt mesh) of
+            Just physGroup -> concat $ M.elems physGroup
+            Nothing -> error $ "Physical group " ++ show dt ++ " not found!"
+
+
+      -- elements = map
+      --    (\em -> case(em) of
+      --       Just emap -> concat $ M.elems emap
+      --       Nothing -> error "Physical group " ++ show

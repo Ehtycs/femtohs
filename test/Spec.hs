@@ -22,16 +22,18 @@ main = do
    points <- gmshModelGetEntities (Just 0)
    gmshModelOccSetMeshSize points 1.0
    gmshModelOccSynchronize
-   disk <- gmshModelAddPhysicalGroup 2 [1] Nothing
-   disk <- gmshModelAddPhysicalGroup 2 [2] Nothing
-   disk <- gmshModelAddPhysicalGroup 2 [3] Nothing
+   gmshModelAddPhysicalGroup 2 [1] Nothing
    gmshModelMeshGenerate $ Just 2
 
    mesh <- mkMesh <$> gmshReadMeshData
 
-   case (meshGetEntityOf (DimTag (2,1)) (EntityTag 1)) mesh of
-      Just x -> forM_ x print
-      Nothing -> putStrLn "Not found"
+   let domain = defineDomain [DimTag (2,1)] mesh
+
+   let element = head domain
+
+   -- case (meshGetEntityOf (DimTag (2,1)) (EntityTag 1)) mesh of
+   --    Just x -> forM_ x print
+   --    Nothing -> putStrLn "Not found"
 
    --gmshFltkRun
    gmshFinalize
