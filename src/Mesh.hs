@@ -4,6 +4,10 @@ import qualified Data.Map as M
 import qualified Data.Vector as V
 import Element
 import TagTypes
+import Domain
+import Data.Containers.ListUtils (nubOrd)
+
+import Debug.Trace
 
 type MeshHierarchy = M.Map DimTag (M.Map EntityTag [Element])
 
@@ -30,18 +34,22 @@ meshGetEntityOf dt ent mesh = do
    physgroup <- M.lookup dt (meshHierarchy mesh)
    M.lookup ent physgroup
 
-defineDomain :: [DimTag] -> Mesh -> [Element]
+getNodesByTag :: NodeData -> [NodeTag] -> [[Double]]
+getNodesByTag nds tags =
+   map (nds V.!) intTags
+      where
+         intTags = map (\(NodeTag tag) -> tag) tags
+
+defineDomain :: [DimTag] -> Mesh -> Domain
 defineDomain dts mesh' =
-   concat $ map lookupPhysgroupOrError dts
+   Domain elements nodes
    where
       mesh = meshHierarchy mesh'
+      elements = concat $ map lookupPhysgroupOrError dts
+      nodes = getNodesByTag (meshNodes mesh') uniqueNodes
+      uniqueNodes = nubOrd $ concat $ map elementNodeTags elements
       lookupPhysgroupOrError dt =
          case (M.lookup dt mesh) of
-            Just physGroup -> concat $ M.elems physGroup
+            Just physGroup ->
+               concat $ M.elems physGroup
             Nothing -> error $ "Physical group " ++ show dt ++ " not found!"
-
-
-      -- elements = map
-      --    (\em -> case(em) of
-      --       Just emap -> concat $ M.elems emap
-      --       Nothing -> error "Physical group " ++ show

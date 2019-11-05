@@ -1,5 +1,8 @@
 module Domain where
 
+import Element
+
 data Domain = Domain
-   { domainElements :: [String]
+   { domainElements :: [Element]
+   , domainNodes :: [[Double]]
    } deriving (Show, Eq)

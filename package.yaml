@@ -25,10 +25,10 @@ dependencies:
 - containers == 0.6.0.1
 - vector == 0.12.0.3
 - haskell-gmsh
+- matrix
 #extra-deps:
 #- github: Ehtycs/haskell-gmsh
 #  commit: 935b419bdc1ba5ee4ad44ec0674279da1f6dfe60
-
 
 library:
   source-dirs: src

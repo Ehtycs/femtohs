@@ -2,8 +2,20 @@ module Element where
 
 import qualified Data.Vector as V
 import TagTypes
+import Data.List (transpose) -- temporary
+
+import qualified Data.Matrix as Mat
 
 type R = Double
+
+type Vector = Mat.Matrix R
+type Covector = Mat.Matrix R
+
+type Jacobian = Mat.Matrix R
+
+mkVector n elems = Mat.fromList n 1 elems
+mkCovector n elems = Mat.fromList 1 n elems
+
 
 -- type ElementTag = Int
 -- type NodeTag = Int
@@ -65,11 +77,10 @@ gaussIntegrationScheme element rank =
 
 -- Scalar basis functions in elements
 nodeScalarBasis :: Element -> Int -> [R] -> R
-nodeScalarBasis (Element elementType _ _ nodes) i pnt
+nodeScalarBasis (Element elementType _ _ _) i pnt
    = case (elementType) of
       Triangle ->
          let
-            [n1,n2,n3] = nodes
             [pu, pv] = pnt
          in
             case i of
@@ -78,9 +89,42 @@ nodeScalarBasis (Element elementType _ _ nodes) i pnt
                2 -> pv
       Line ->
          let
-            [n1,n2] = nodes
             [pu] = pnt
          in
             case i of
                0 -> 1 - pu
                1 -> pu
+
+-- Derivatives of scalar basis functions in elements
+nodeScalarBasisDiff :: Element -> Int -> [R] -> Covector
+nodeScalarBasisDiff (Element elementType _ _ _) i pnt
+   = case (elementType) of
+      Triangle ->
+         let
+            [pu, pv] = pnt
+         in
+            case i of
+               0 -> mkCovector 2 [-1,1]
+               1 -> mkCovector 2 [1,0]
+               2 -> mkCovector 2 [0,1]
+      Line ->
+         let
+            [pu] = pnt
+         in
+            case i of
+               0 -> mkCovector 1 [-1]
+               1 -> mkCovector 1 [1]
+
+isopJacobian :: Element -> [R] -> Mat.Matrix R
+isopJacobian element pnt =
+   case (elementType element) of
+      Triangle ->
+            -- jacobian is doox / doou and x is same for column
+            -- row major ordering [[e11, e12, e13], [e21, e22, e23]] etc...
+            Mat.multStd dNs ns
+            where
+               ns = Mat.fromLists $ elementNodes element -- 3 x 3
+               bf i = nodeScalarBasisDiff element i pnt
+               -- dNs = Mat.fromLists $
+               --    map (\i -> nodeScalarBasisDiff element i pnt) [0,1,2]
+               dNs = Mat.transpose $ bf 0 Mat.<-> bf 1 Mat.<-> bf 2 -- 2 x 3
