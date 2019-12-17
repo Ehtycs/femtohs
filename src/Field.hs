@@ -8,4 +8,4 @@ fromFunction :: (Num a) => Domain -> ([Double] -> a) -> Field a
 fromFunction dom fun
    = Field $ map fun nodes
       where
-         nodes = domainNodes dom
+         nodes = domainNodeCoordinates dom

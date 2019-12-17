@@ -1,8 +1,10 @@
 module Domain where
 
 import Element
+import TagTypes
 
 data Domain = Domain
    { domainElements :: [Element]
-   , domainNodes :: [[Double]]
+   , domainNodes :: [NodeTag]
+   , domainNodeCoordinates :: [[Double]]
    } deriving (Show, Eq)

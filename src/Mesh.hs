@@ -42,7 +42,7 @@ getNodesByTag nds tags =
 
 defineDomain :: [DimTag] -> Mesh -> Domain
 defineDomain dts mesh' =
-   Domain elements nodes
+   Domain elements uniqueNodes nodes
    where
       mesh = meshHierarchy mesh'
       elements = concat $ map lookupPhysgroupOrError dts

@@ -13,11 +13,13 @@ import qualified Data.Map as M
 import qualified Data.Vector as V
 import Control.Monad (forM, forM_)
 import TagTypes
+import Domain
+import Field
+import Data.Maybe (fromMaybe)
 
--- Get a given list of indices from vect. Remember that GMSH numbers
--- the nodes from 1..., not zero
+-- Get a given list of indices from vect. 
 mkNodeCoordinateStash :: V.Vector a -> [Int] -> [a]
-mkNodeCoordinateStash vect inds = map (vect V.!) (map (+ (-1)) inds)
+mkNodeCoordinateStash vect inds = map (vect V.!) inds
 
 reshape :: Int -> [a] -> [[a]]
 reshape _ [] = []
@@ -57,7 +59,8 @@ gmshReadMeshData = do
                -- construct the elements and shove them in a list
                let etype' = mkElementType etype
                let nnodes = numNodes etype'
-               let gnop = reshape nnodes nodeTags
+               -- gmsh numbers nodes starting from 1, we start from 0
+               let gnop = reshape nnodes $ map (\x -> x-1) nodeTags
                elements <- forM (zip elementTags gnop) $ \ (et, ntags) -> do
                   let ncord = nodeCoordinateStash ntags
                   return $ mkElement etype' et ntags ncord
@@ -73,3 +76,14 @@ gmshReadMeshData = do
       return pgroupsElements
 
    return $ (ncoords, (concat out))
+
+gmshExportField :: Domain -> Maybe String -> Field Double -> IO()
+gmshExportField domain nameMaybe field = do
+   let name = fromMaybe "" nameMaybe
+   view <- gmshViewAdd name Nothing
+   let (Field vals) = field
+   let vals' = map (:[]) vals
+   -- Gmsh numbers nodes from 1 , we do it from 0
+   let nodetags = map (\(NodeTag n) -> n+1) $ domainNodes domain
+   -- very cheap to start labeling STEPS FROM ZERO
+   gmshViewAddModelData view 0 "" "NodeData" nodetags vals' Nothing (Just 1) Nothing
