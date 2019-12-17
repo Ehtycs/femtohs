@@ -58,8 +58,8 @@ mkElementType n = case n of
 -- integration scheme
 -- outputs points, weigths
 gaussIntegrationScheme :: Element -> Int -> [([Double], Double)]
-gaussIntegrationScheme element rank =
-   case (elementType element) of
+gaussIntegrationScheme Element{elementType=et} rank =
+   case et of
       Triangle ->
          case rank of
             1 -> [([1/3, 1/3] , 0.5)]
@@ -77,8 +77,8 @@ gaussIntegrationScheme element rank =
 
 -- Scalar basis functions in elements
 nodeScalarBasis :: Element -> Int -> [R] -> R
-nodeScalarBasis (Element elementType _ _ _) i pnt
-   = case (elementType) of
+nodeScalarBasis Element{elementType=et} i pnt
+   = case et of
       Triangle ->
          let
             [pu, pv] = pnt
@@ -97,8 +97,8 @@ nodeScalarBasis (Element elementType _ _ _) i pnt
 
 -- Derivatives of scalar basis functions in elements
 nodeScalarBasisDiff :: Element -> Int -> [R] -> Covector
-nodeScalarBasisDiff (Element elementType _ _ _) i pnt
-   = case (elementType) of
+nodeScalarBasisDiff Element{elementType=et} i pnt
+   = case et of
       Triangle ->
          let
             [pu, pv] = pnt
@@ -116,15 +116,13 @@ nodeScalarBasisDiff (Element elementType _ _ _) i pnt
                1 -> mkCovector 1 [1]
 
 isopJacobian :: Element -> [R] -> Mat.Matrix R
-isopJacobian element pnt =
-   case (elementType element) of
+isopJacobian el@Element{elementType=et, elementNodes=en} pnt =
+   case et of
       Triangle ->
             -- jacobian is doox / doou and x is same for column
             -- row major ordering [[e11, e12, e13], [e21, e22, e23]] etc...
             Mat.multStd dNs ns
             where
-               ns = Mat.fromLists $ elementNodes element -- 3 x 3
-               bf i = nodeScalarBasisDiff element i pnt
-               -- dNs = Mat.fromLists $
-               --    map (\i -> nodeScalarBasisDiff element i pnt) [0,1,2]
+               ns = Mat.fromLists $ en -- 3 x 3
+               bf i = nodeScalarBasisDiff el i pnt
                dNs = Mat.transpose $ bf 0 Mat.<-> bf 1 Mat.<-> bf 2 -- 2 x 3
