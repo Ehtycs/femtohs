@@ -1,3 +1,6 @@
+{-# LANGUAGE DataKinds #-}
+
+
 import GmshAPI
 
 import Control.Monad (forM, forM_)
@@ -8,6 +11,8 @@ import Domain
 import GmshInterface
 import TagTypes
 import Field
+
+import qualified Eigen.SparseMatrix as Eig
 
 import qualified Data.Map.Strict as M
 
@@ -46,7 +51,9 @@ makeLocalStiffMat element = map fun dofs
     
 makeStiffnessMatrix :: Domain -> [(NodeTag, NodeTag, Double)]
 makeStiffnessMatrix  = concat . map makeLocalStiffMat . domainElements
-    
+
+unpackNodeTag :: (NodeTag, NodeTag, Double) -> (Int,Int,Double)             
+unpackNodeTag ((NodeTag a), (NodeTag b), x) = (a,b,x) 
 
 main :: IO ()
 main = do
@@ -56,5 +63,12 @@ main = do
    let field = fromFunction domain (\[x,y,z] -> y)
 
    gmshExportField domain (Just "Asd") field
+
+   let stiffmats = map unpackNodeTag $ makeStiffnessMatrix domain
+
+   let stiffmat = Eig.fromList stiffmats :: Eig.SparseMatrixXd 16 16
+
+   print stiffmat               
+   
 --   gmshFltkRun                 
    gmshFinalize
